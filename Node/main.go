@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"math"
 	"net/http"
 	"os"
@@ -184,7 +185,22 @@ func DatapointManager(channel DatapointChannel) {
 	var median float32 = 0
 	var begin_timestamp uint64 = math.MaxUint64
 	var end_timestamp uint64 = 0
-	time_delta := uint64(60)
+	req, err := http.NewRequest(http.MethodGet, "http://localhost:5000/MaxBucketSize", nil)
+	if err != nil {
+		panic(err)
+	}
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	if res.StatusCode != 200 {
+		panic("Request not successful")
+	}
+	byte_data, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		panic(err)
+	}
+	time_delta, err := strconv.ParseUint(string(byte_data[:]), 10, 64)
 	//create datapoint list
 	datapointList := make(DatapointList, 0)
 	for {

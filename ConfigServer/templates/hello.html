@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body {font-family: Arial;}
+
+/* Style the tab */
+.tab {
+  overflow: hidden;
+  border: 1px solid #ccc;
+  background-color: #f1f1f1;
+}
+
+/* Style the buttons inside the tab */
+.tab button {
+  background-color: inherit;
+  float: left;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 14px 16px;
+  transition: 0.3s;
+  font-size: 17px;
+}
+
+/* Change background color of buttons on hover */
+.tab button:hover {
+  background-color: #ddd;
+}
+
+/* Create an active/current tablink class */
+.tab button.active {
+  background-color: #ccc;
+}
+
+/* Style the tab content */
+.tabcontent {
+  display: none;
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  border-top: none;
+}
+
+/* Style the close button */
+.topright {
+  float: right;
+  cursor: pointer;
+  font-size: 28px;
+}
+
+.topright:hover {color: red;}
+</style>
+</head>
+<body>
+
+<h1>TSUS DB V1.0.0</h1>
+<p>This is the global configuration for the tsus db</p>
+
+<div class="tab">
+  <button class="tablinks" onclick="openTab(event, 'Root')" id="defaultOpen">Root router configurator</button>
+  <button class="tablinks" onclick="openTab(event, 'LRouter')">Leaf router configurator</button>
+  <button class="tablinks" onclick="openTab(event, 'Leaf')"  id="defaultOpen">Leaf configurator</button>
+</div>
+
+<div id="Root" class="tabcontent">
+  <span onclick="this.parentElement.style.display='none'" class="topright">&times</span>
+  <h3>Root router configuration</h3>
+  <p></p>
+</div>
+
+<div id="LRouter" class="tabcontent">
+  <span onclick="this.parentElement.style.display='none'" class="topright">&times</span>
+  <h3>Leaf router configurator</h3>
+  <p></p> 
+</div>
+
+<div id="Leaf" class="tabcontent">
+  <span onclick="this.parentElement.style.display='none'" class="topright">&times</span>
+  <h3>Leaf configurator</h3>
+  <form id="formLeaf" method="POST" action="javascript:void(0);">
+    <label for="MaxBucketSize">Max bucket size in minutes: </label>
+    <input type="number" name="MaxBucketSize" id="MaxBucketSize" value="{{MaxBucketSize}}">
+    </br>
+    <label for="EnableLogin">Print logging size in minutes: </label>
+    <input type="checkbox" name="EnableLogin" id="EnableLogin" value="{{EnableLogin}}">
+  </form>
+  
+</div>
+
+<script>
+function openTab(evt, cityName) {
+  var i, tabcontent, tablinks;
+  tabcontent = document.getElementsByClassName("tabcontent");
+  for (i = 0; i < tabcontent.length; i++) {
+    tabcontent[i].style.display = "none";
+  }
+  tablinks = document.getElementsByClassName("tablinks");
+  for (i = 0; i < tablinks.length; i++) {
+    tablinks[i].className = tablinks[i].className.replace(" active", "");
+  }
+  document.getElementById(cityName).style.display = "block";
+  evt.currentTarget.className += " active";
+}
+  document.getElementById("MaxBucketSize").value = 100
+  document.getElementById("formLeaf").addEventListener('change', function(e) {
+      e.preventDefault()
+      var info = {}
+      if(e.target.type=="checkbox"){
+        info = {"name":e.target.name,"value":e.target.checked}
+      }
+      else if(e.target.type=="number"){
+        info = {"name":e.target.name,"value":Number.parseInt(e.target.value)}
+      }else{
+        info = {"name":e.target.name,"value":e.target.value}
+      }
+      fetch('http://localhost:5000/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(info)
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log(data); // Log the response data
+      })
+      .catch(error => {
+        console.error('There was a problem with the fetch operation:', error);
+      });
+  });
+
+
+// Get the element with id="defaultOpen" and click on it
+document.getElementById("defaultOpen").click();
+</script>
+   
+</body>
+</html> 
