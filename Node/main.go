@@ -352,7 +352,7 @@ func DatapointHandlerGetAverage(channel DatapointChannel) http.HandlerFunc {
 		fmt.Println(len(positive))
 		for _, name := range positive {
 			//load json
-			file, err := os.Open(name + "/metadata.json")
+			file, err := os.Open("data/" + name + "/metadata.json")
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
@@ -365,10 +365,8 @@ func DatapointHandlerGetAverage(channel DatapointChannel) http.HandlerFunc {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
-			println(metadata.Avg, metadata.DatapointsCount)
 			val += float64(metadata.Avg * float32(metadata.DatapointsCount))
 			count += float64(metadata.DatapointsCount)
-			fmt.Println(val, count)
 		}
 		fmt.Println(endPartial)
 		fmt.Fprint(w, "{\"value\":", val/count, "}")
