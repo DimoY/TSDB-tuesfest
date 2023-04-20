@@ -262,6 +262,7 @@ func DatapointHandlerAdd(channel DatapointChannel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// get datapoint
 		datapoint, err := getDatapoint(r)
+		fmt.Println(datapoint)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -327,6 +328,7 @@ func DatapointHandlerGetAverage(channel DatapointChannel) http.HandlerFunc {
 			lister := strings.Split(f.Name(), "-")
 			fromRep, toRep := lister[0], lister[1]
 			fromRepNum, err := strconv.ParseUint(fromRep, 10, 64)
+
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
@@ -363,6 +365,7 @@ func DatapointHandlerGetAverage(channel DatapointChannel) http.HandlerFunc {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
+			println(metadata.Avg, metadata.DatapointsCount)
 			val += float64(metadata.Avg * float32(metadata.DatapointsCount))
 			count += float64(metadata.DatapointsCount)
 			fmt.Println(val, count)
@@ -384,5 +387,5 @@ func main() {
 	// start HTTP server
 	http.HandleFunc("/datapoint-post", DatapointHandlerAdd(datapoint_channel))
 	http.HandleFunc("/datapoint-get-average", DatapointHandlerGetAverage(datapoint_channel))
-	http.ListenAndServe(":8080", nil)
+	http.ListenAndServe(":8001", nil)
 }

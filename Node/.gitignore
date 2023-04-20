@@ -8,6 +8,9 @@
 data/*/*
 data/*
 data
+*data/*/*
+*data/*
+*data
 .1Data*
 archive.zip
 Data*

@@ -1,1 +1,1 @@
-bg	data.bg	Zone-1
+bg	http://localhost:8002/presend/	Zone-1

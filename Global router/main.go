@@ -263,17 +263,32 @@ func sendHandler(zones *Zones) http.Handler {
 			w.Write([]byte("Command not formatted correctly"))
 			return
 		}
+		bef, _, found = strings.Cut(string(bef), "/")
+		if !found {
+			w.Write([]byte("Command not formatted correctly"))
+			return
+		}
 		zone, ok := (*zones)[bef]
 		if !ok {
 			w.Write([]byte("Country not found"))
 		} else {
-			w.Write([]byte("Country found request resend"))
-			logger.Print(string(byte_data[:]))
 			// Create a HTTP post request
-			_, err := http.NewRequest("POST", zone.Domain, bytes.NewBuffer(byte_data))
+			req, err := http.NewRequest(http.MethodPost, zone.Domain, bytes.NewBuffer(byte_data))
 			if err != nil {
-				panic(err)
+				w.Write([]byte("req not successful"))
 			}
+			res, err := http.DefaultClient.Do(req)
+			if err != nil {
+				fmt.Fprintf(w, "client: error making http request: %s\n", err)
+			}
+			if res.StatusCode != 200 {
+				w.Write([]byte("client: error status code not 200"))
+			}
+			byte_data, err = ioutil.ReadAll(res.Body)
+			if err != nil {
+				w.Write([]byte("client: error reading response body"))
+			}
+			logger.Print(string(byte_data[:]))
 		}
 	})
 }
@@ -291,7 +306,7 @@ func main() {
 	mux.Handle("/remove/", removeHandler(c))
 	mux.Handle("/presend/", sendHandler(&zones))
 	log.Print("Listening on :8989...")
-	err := http.ListenAndServe(":8989", mux)
+	err := http.ListenAndServe(":8003", mux)
 	log.Fatal(err)
 
 }

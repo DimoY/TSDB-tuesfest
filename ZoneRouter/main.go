@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -255,20 +256,36 @@ func sendHandler(leafs *Leafs) http.Handler {
 			return
 		}
 
-		bef, after, found := strings.Cut(string(byte_data), ":")
+		bef, _, found := strings.Cut(string(byte_data), ":")
 		if !found {
 			w.Write([]byte("LeafTag not formatted correctly"))
 			return
 		}
-		bef, _, found = strings.Cut(after, ":")
+		_, after, found := strings.Cut(bef, "/")
 		if !found {
 			w.Write([]byte("LeafTag not formatted correctly"))
 			return
 		}
-		_, ok := (*leafs)[bef]
+		zone, ok := (*leafs)[after]
 		if !ok {
 			w.Write([]byte("LeafTag not found"))
 		} else {
+			fmt.Println(zone.Domain)
+			req, err := http.NewRequest(http.MethodPost, zone.Domain, bytes.NewBuffer(byte_data))
+			if err != nil {
+				w.Write([]byte("req not successful"))
+			}
+			res, err := http.DefaultClient.Do(req)
+			if err != nil {
+				fmt.Fprintf(w, "client: error making http request: %s\n", err)
+			}
+			if res.StatusCode != 200 {
+				w.Write([]byte("client: error status code not 200"))
+			}
+			byte_data, err = ioutil.ReadAll(res.Body)
+			if err != nil {
+				w.Write([]byte("client: error reading response body"))
+			}
 			w.Write([]byte("LeafTag found request resend"))
 			logger.Print(string(byte_data[:]))
 		}
@@ -288,7 +305,7 @@ func main() {
 	mux.Handle("/remove/", removeHandler(c))
 	mux.Handle("/presend/", sendHandler(&leafs))
 	log.Print("Listening on :8989...")
-	err := http.ListenAndServe(":8989", mux)
+	err := http.ListenAndServe(":8002", mux)
 	log.Fatal(err)
 
 }
